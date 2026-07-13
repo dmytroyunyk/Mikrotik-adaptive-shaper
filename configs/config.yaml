@@ -1,0 +1,13 @@
+routeros:
+  host: "100.127.23.76"
+  username: ""
+  password: ""
+  port: 8728
+
+agent:
+  internal: "1s"
+
+shaper:
+  uplink_mbit: 950
+  realtime_mbit: 200
+  bulk_mbit: 350
