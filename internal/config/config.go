@@ -1,0 +1,74 @@
+package config
+
+import (
+	"fmt"
+	"os"
+	"time"
+
+	"gopkg.in/yaml.v3"
+)
+
+type Config struct {
+	RouterOS RouterOSConfig `yaml:"routeros"`
+	Agent    AgentConfig    `yaml:"config"`
+	Shaper   ShaperConfig   `yaml:"shaper"`
+}
+
+type RouterOSConfig struct {
+	Host     string `yaml:"host"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Port     int    `yaml:"port"`
+}
+
+type AgentConfig struct {
+	Interval string `yaml:"interval"`
+}
+
+func (a AgentConfig) Parsed() (time.Duration, error) {
+	return time.ParseDuration(a.Interval)
+}
+
+type ShaperConfig struct {
+	UplinkMbit   int `yaml:"uplink_mbit"`
+	RealtimeMbit int `yaml:"realtime_mbit"`
+	BulkMbit     int `yaml:"bulk_mbit"`
+}
+
+func Load(path string) (*Config, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("config: cannot open file %s: %w", path, err)
+	}
+	defer f.Close()
+
+	var cfg Config
+	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
+		return nil, fmt.Errorf("config: cannot parse yaml: %w", err)
+	}
+
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
+
+	return &cfg, nil
+}
+
+func (c *Config) validate() error {
+	if c.RouterOS.Host == "" {
+		return fmt.Errorf("config: routeros.host is required")
+	}
+	if c.RouterOS.Username == "" {
+		return fmt.Errorf("config: routeros.username is required")
+	}
+	if c.RouterOS.Password == "" {
+		return fmt.Errorf("config: routeros.password is required")
+	}
+	if c.Agent.Interval == "" {
+		return fmt.Errorf("config: agent.internal is required")
+	}
+	if c.Shaper.UplinkMbit == 0 {
+		return fmt.Errorf("config: shaper.up;ink_mbit is required")
+	}
+	return nil
+}
