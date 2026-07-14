@@ -5,7 +5,7 @@ routeros:
   port: 8728
 
 agent:
-  internal: "1s"
+  interval: "1s"
 
 shaper:
   uplink_mbit: 950
