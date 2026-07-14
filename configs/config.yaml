@@ -1,13 +1,14 @@
 routeros:
   host: "100.127.23.76"
-  username: ""
+  username: "admin"
   password: ""
   port: 8728
 
 agent:
-  internal: "1s"
+  interval: "1s"
 
 shaper:
+  wan_interface: "ether1"
   uplink_mbit: 950
   realtime_mbit: 200
   bulk_mbit: 350

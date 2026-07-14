@@ -8,7 +8,7 @@ const (
 	ClassRealtime    TrafficClass = "realtime"
 	ClassInteractive TrafficClass = "interactive"
 	ClassBulk        TrafficClass = "bulk"
-	ClassUnkown      TrafficClass = "unkown"
+	ClassUnknown     TrafficClass = "unknown"
 )
 
 type Flow struct {
@@ -20,13 +20,13 @@ type Flow struct {
 
 	Class TrafficClass
 
-	BytesPerSec  uint64
-	PacketPerSec uint64
+	BytesPerSec   uint64
+	PacketsPerSec uint64
 
-	lastSeen time.Time
+	LastSeen time.Time
 }
 
-type SnapShot struct {
+type Snapshot struct {
 	Timestamp time.Time
 	Flows     []Flow
 
