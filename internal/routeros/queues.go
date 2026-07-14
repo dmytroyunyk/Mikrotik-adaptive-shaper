@@ -1,9 +1,9 @@
 package routeros
 
 import (
+	"context"
 	"fmt"
 	"strconv"
-	"context"
 
 	"github.com/dmytroyunyk/adaptive-shaper/pkg/models"
 )
@@ -16,6 +16,7 @@ const (
 )
 
 const (
+	PriorityRoot        = 8
 	PriorityRealtime    = 1
 	PriorityInteractive = 4
 	PriorityBulk        = 8
@@ -69,7 +70,7 @@ func (c *Client) ListQueues(ctx context.Context) ([]Queue, error) {
 	return queues, nil
 }
 
-func (c *Client) QueueStats(ctx context.Context) (...) {
+func (c *Client) QueueStats(ctx context.Context) (map[string]QueueStat, error) {
 	reply, err := c.Run(ctx, "/queue/tree/print", "=stats=")
 	if err != nil {
 		return nil, fmt.Errorf("queues: stats failed: %w", err)
@@ -105,7 +106,7 @@ func (c *Client) findID(ctx context.Context, name string) (string, error) {
 	return reply.Re[0].Map[".id"], nil
 }
 
-func (c *Client) EnsureTree(iface string, uplinkMbit, rtMbit, bulkMbit int) error {
+func (c *Client) EnsureTree(ctx context.Context, iface string, uplinkMbit, rtMbit, bulkMbit int) error {
 	interMbit := uplinkMbit - rtMbit - bulkMbit
 	if interMbit <= 0 {
 		return fmt.Errorf(
@@ -138,9 +139,9 @@ func (c *Client) EnsureTree(iface string, uplinkMbit, rtMbit, bulkMbit int) erro
 		limitAt  int
 		priority int
 	}{
-		{QueueRealtime, "rt", rtMbit, PriorityRealtime},
-		{QueueInteractive, "interactive", interMbit, PriorityInteractive},
-		{QueueBulk, "bulk", bulkMbit, PriorityBulk},
+		{QueueRealtime, string(models.ClassRealtime), rtMbit, PriorityRealtime},
+		{QueueInteractive, string(models.ClassInteractive), interMbit, PriorityInteractive},
+		{QueueBulk, string(models.ClassBulk), bulkMbit, PriorityBulk},
 	}
 
 	for _, ch := range children {
