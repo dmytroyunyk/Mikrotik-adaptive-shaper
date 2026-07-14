@@ -8,7 +8,7 @@ const (
 	ClassRealtime    TrafficClass = "realtime"
 	ClassInteractive TrafficClass = "interactive"
 	ClassBulk        TrafficClass = "bulk"
-	ClassUnknown     TrafficClass = "Unknown"
+	ClassUnknown     TrafficClass = "unknown"
 )
 
 type Flow struct {
