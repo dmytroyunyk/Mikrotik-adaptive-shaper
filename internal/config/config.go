@@ -63,10 +63,9 @@ func Load(path string) (*Config, error) {
 func (c *Config) applyDefaults() {
 	if c.RouterOS.Port == 0 {
 		c.RouterOS.Port = defaultAPIPort
-
-		if v := os.Getenv("ROUTEROS_PASSWORD"); v != "" {
-			c.RouterOS.Password = v
-		}
+	}
+	if v := os.Getenv("ROUTEROS_PASSWORD"); v != "" {
+		c.RouterOS.Password = v
 	}
 }
 
