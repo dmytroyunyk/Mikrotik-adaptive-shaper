@@ -127,7 +127,7 @@ func (c *Client) EnsureTree(ctx context.Context, iface string, uplinkMbit, rtMbi
 	if !present[QueueRoot] {
 		if err := c.addQueue(ctx,
 			QueueRoot, iface, "",
-			mbitToBps(uplinkMbit), mbitToBps(uplinkMbit), 8,
+			mbitToBps(uplinkMbit), mbitToBps(uplinkMbit), PriorityRoot,
 		); err != nil {
 			return err
 		}
