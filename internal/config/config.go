@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const defaultApiPort = 8728
+const defaultAPIPort = 8728
 
 type Config struct {
 	RouterOS RouterOSConfig `yaml:"routeros"`
@@ -62,7 +62,11 @@ func Load(path string) (*Config, error) {
 
 func (c *Config) applyDefaults() {
 	if c.RouterOS.Port == 0 {
-		c.RouterOS.Port = defaultApiPort
+		c.RouterOS.Port = defaultAPIPort
+
+		if v := os.Getenv("ROUTEROS_PASSWORD"); v != "" {
+			c.RouterOS.Password = v
+		}
 	}
 }
 
