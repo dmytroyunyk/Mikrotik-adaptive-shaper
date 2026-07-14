@@ -3,6 +3,9 @@ package routeros
 import (
 	"fmt"
 	"strconv"
+	"context"
+
+	"github.com/dmytroyunyk/adaptive-shaper/pkg/models"
 )
 
 const (
@@ -39,8 +42,8 @@ type QueueStat struct {
 	Dropped uint64
 }
 
-func (c *Client) ListQueues() ([]Queue, error) {
-	reply, err := c.Run("/queue/tree/print")
+func (c *Client) ListQueues(ctx context.Context) ([]Queue, error) {
+	reply, err := c.Run(ctx, "/queue/tree/print")
 	if err != nil {
 		return nil, fmt.Errorf("queues: print failed: %w", err)
 	}
@@ -66,8 +69,8 @@ func (c *Client) ListQueues() ([]Queue, error) {
 	return queues, nil
 }
 
-func (c *Client) QueueStats() (map[string]QueueStat, error) {
-	reply, err := c.Run("/queue/tree/print", "=stats=")
+func (c *Client) QueueStats(ctx context.Context) (...) {
+	reply, err := c.Run(ctx, "/queue/tree/print", "=stats=")
 	if err != nil {
 		return nil, fmt.Errorf("queues: stats failed: %w", err)
 	}
@@ -91,8 +94,8 @@ func (c *Client) QueueStats() (map[string]QueueStat, error) {
 	return stats, nil
 }
 
-func (c *Client) findID(name string) (string, error) {
-	reply, err := c.Run("/queue/tree/print", "?name="+name)
+func (c *Client) findID(ctx context.Context, name string) (string, error) {
+	reply, err := c.Run(ctx, "/queue/tree/print", "?name="+name)
 	if err != nil {
 		return "", fmt.Errorf("queues: lookup %q failed: %w", name, err)
 	}
@@ -111,7 +114,7 @@ func (c *Client) EnsureTree(iface string, uplinkMbit, rtMbit, bulkMbit int) erro
 		)
 	}
 
-	existing, err := c.ListQueues()
+	existing, err := c.ListQueues(ctx)
 	if err != nil {
 		return err
 	}
@@ -121,7 +124,7 @@ func (c *Client) EnsureTree(iface string, uplinkMbit, rtMbit, bulkMbit int) erro
 	}
 
 	if !present[QueueRoot] {
-		if err := c.addQueue(
+		if err := c.addQueue(ctx,
 			QueueRoot, iface, "",
 			mbitToBps(uplinkMbit), mbitToBps(uplinkMbit), 8,
 		); err != nil {
@@ -144,7 +147,7 @@ func (c *Client) EnsureTree(iface string, uplinkMbit, rtMbit, bulkMbit int) erro
 		if present[ch.name] {
 			continue
 		}
-		if err := c.addQueue(
+		if err := c.addQueue(ctx,
 			ch.name, QueueRoot, ch.mark,
 			mbitToBps(ch.limitAt), mbitToBps(uplinkMbit), ch.priority,
 		); err != nil {
@@ -155,7 +158,7 @@ func (c *Client) EnsureTree(iface string, uplinkMbit, rtMbit, bulkMbit int) erro
 	return nil
 }
 
-func (c *Client) addQueue(name, parent, mark, limitAt, maxLimit string, priority int) error {
+func (c *Client) addQueue(ctx context.Context, name, parent, mark, limitAt, maxLimit string, priority int) error {
 	args := []string{
 		"/queue/tree/add",
 		"=name=" + name,
@@ -169,19 +172,19 @@ func (c *Client) addQueue(name, parent, mark, limitAt, maxLimit string, priority
 		args = append(args, "=packet-mark="+mark)
 	}
 
-	if _, err := c.Run(args...); err != nil {
+	if _, err := c.Run(ctx, args...); err != nil {
 		return fmt.Errorf("queues: add %q failed: %w", name, err)
 	}
 	return nil
 }
 
-func (c *Client) SetLimits(name string, limitAtMbit, maxLimitMbit int) error {
-	id, err := c.findID(name)
+func (c *Client) SetLimits(ctx context.Context, name string, limitAtMbit, maxLimitMbit int) error {
+	id, err := c.findID(ctx, name)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.Run(
+	_, err = c.Run(ctx,
 		"/queue/tree/set",
 		"=.id="+id,
 		"=limit-at="+mbitToBps(limitAtMbit),
