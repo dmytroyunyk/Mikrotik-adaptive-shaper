@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/dmytroyunyk/adaptive-shaper/pkg/models"
+	"github.com/dmytroyunyk/adaptive-shaper/models"
 )
 
 const (
