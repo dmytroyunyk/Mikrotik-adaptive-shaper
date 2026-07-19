@@ -12,3 +12,8 @@ shaper:
   uplink_mbit: 950
   realtime_mbit: 200
   bulk_mbit: 350
+
+classifier:
+  udp_ratio_realtime: 0.6
+  bulk_min_conns: 50
+  bulk_min_bps: 5000000
