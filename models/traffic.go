@@ -15,11 +15,12 @@ const (
 )
 
 type SourceStat struct {
-	Addr       netip.Addr
+	Addr        netip.Addr
 	Connections int
-	TCPCount   int
-	UDPCount   int
-	Class      TrafficClass
+	TCPCount    int
+	UDPCount    int
+	BytesPerSec uint64
+	Class       TrafficClass
 }
 
 type QueueRate struct {

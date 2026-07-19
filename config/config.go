@@ -11,9 +11,10 @@ import (
 const defaultAPIPort = 8728
 
 type Config struct {
-	RouterOS RouterOSConfig `yaml:"routeros"`
-	Agent    AgentConfig    `yaml:"agent"`
-	Shaper   ShaperConfig   `yaml:"shaper"`
+	RouterOS   RouterOSConfig   `yaml:"routeros"`
+	Agent      AgentConfig      `yaml:"agent"`
+	Shaper     ShaperConfig     `yaml:"shaper"`
+	Classifier ClassifierConfig `yaml:"classifier"`
 }
 
 type RouterOSConfig struct {
@@ -36,6 +37,12 @@ type ShaperConfig struct {
 	UplinkMbit   int    `yaml:"uplink_mbit"`
 	RealtimeMbit int    `yaml:"realtime_mbit"`
 	BulkMbit     int    `yaml:"bulk_mbit"`
+}
+
+type ClassifierConfig struct {
+	UDPRatioRealtime float64 `yaml:"udp_ratio_realtime"`
+	BulkMinConns     int     `yaml:"bulk_min_conns"`
+	BulkMinBps       uint64  `yaml:"bulk_min_bps"`
 }
 
 func Load(path string) (*Config, error) {
@@ -66,6 +73,15 @@ func (c *Config) applyDefaults() {
 	}
 	if v := os.Getenv("ROUTEROS_PASSWORD"); v != "" {
 		c.RouterOS.Password = v
+	}
+	if c.Classifier.UDPRatioRealtime == 0 {
+		c.Classifier.UDPRatioRealtime = 0.6
+	}
+	if c.Classifier.BulkMinConns == 0 {
+		c.Classifier.BulkMinConns = 50
+	}
+	if c.Classifier.BulkMinBps == 0 {
+		c.Classifier.BulkMinBps = 5_000_000
 	}
 }
 
