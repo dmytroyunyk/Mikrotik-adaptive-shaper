@@ -40,10 +40,10 @@ func New() *Metrics {
 }
 
 func (m *Metrics) Update(snap models.Snapshot) {
-	for _, f := range snap.Flows {
+	for _, q := range snap.Queues {
 		m.flowBytesPerSec.
-			WithLabelValues(string(f.Class)).
-			Set(float64(f.BytesPerSec))
+			WithLabelValues(string(q.Class)).
+			Set(float64(q.BytesPerSec))
 	}
 	m.totalMbit.Set(snap.TotalMbit)
 }

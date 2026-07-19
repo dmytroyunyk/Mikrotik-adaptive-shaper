@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"net/netip"
+	"time"
+)
 
 type TrafficClass string
 
@@ -11,24 +14,23 @@ const (
 	ClassUnknown     TrafficClass = "unknown"
 )
 
-type Flow struct {
-	SrcIP    string
-	DstIP    string
-	SrcPort  uint16
-	DstPort  uint16
-	Protocol string
+type SourceStat struct {
+	Addr       netip.Addr
+	Connections int
+	TCPCount   int
+	UDPCount   int
+	Class      TrafficClass
+}
 
-	Class TrafficClass
-
-	BytesPerSec   uint64
-	PacketsPerSec uint64
-
-	LastSeen time.Time
+type QueueRate struct {
+	Name        string
+	Class       TrafficClass
+	BytesPerSec uint64
 }
 
 type Snapshot struct {
 	Timestamp time.Time
-	Flows     []Flow
-
+	Sources   []SourceStat
+	Queues    []QueueRate
 	TotalMbit float64
 }

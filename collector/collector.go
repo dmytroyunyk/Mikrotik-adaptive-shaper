@@ -54,7 +54,7 @@ func (c *Collector) poll(ctx context.Context) (models.Snapshot, error) {
 	}
 
 	seconds := c.interval.Seconds()
-	flows := make([]models.Flow, 0, len(stats))
+	queues := make([]models.QueueRate, 0, len(stats))
 	var totalBps uint64
 
 	for name, st := range stats {
@@ -62,23 +62,38 @@ func (c *Collector) poll(ctx context.Context) (models.Snapshot, error) {
 
 		var bps uint64
 		if seen && st.Bytes >= prevBytes {
-			delta := st.Bytes - prevBytes
-			bps = uint64(float64(delta) / seconds)
+			bps = uint64(float64(st.Bytes-prevBytes) / seconds)
 		}
 
 		c.prev[name] = st.Bytes
 		totalBps += bps
 
-		flows = append(flows, models.Flow{
+		queues = append(queues, models.QueueRate{
+			Name:        name,
 			Class:       classForQueue(name),
 			BytesPerSec: bps,
-			LastSeen:    time.Now(),
+		})
+	}
+	sums, err := c.client.SourceConnections(ctx)
+	if err != nil {
+		return models.Snapshot{}, err
+	}
+
+	sources := make([]models.SourceStat, 0, len(sums))
+	for _, s := range sums {
+		sources = append(sources, models.SourceStat{
+			Addr:        s.Addr,
+			Connections: s.Total,
+			TCPCount:    s.TCPCount,
+			UDPCount:    s.UDPCount,
+			Class:       models.ClassUnknown,
 		})
 	}
 
 	return models.Snapshot{
 		Timestamp: time.Now(),
-		Flows:     flows,
+		Sources:   sources,
+		Queues:    queues,
 		TotalMbit: float64(totalBps*8) / 1_000_000,
 	}, nil
 }
