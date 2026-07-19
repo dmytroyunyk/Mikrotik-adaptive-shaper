@@ -9,7 +9,7 @@ type Thresholds struct {
 }
 
 func classify(s models.SourceStat, t Thresholds) models.TrafficClass {
-	if s.Connections > 2 {
+	if s.Connections > 0 {
 		udpRatio := float64(s.UDPCount) / float64(s.Connections)
 		if udpRatio >= t.UDPRatioRealtime {
 			return models.ClassRealtime
