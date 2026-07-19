@@ -86,6 +86,7 @@ func (c *Collector) poll(ctx context.Context) (models.Snapshot, error) {
 			Connections: s.Total,
 			TCPCount:    s.TCPCount,
 			UDPCount:    s.UDPCount,
+			BytesPerSec: s.RateBps,
 			Class:       models.ClassUnknown,
 		})
 	}
