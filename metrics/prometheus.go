@@ -30,7 +30,7 @@ func New() *Metrics {
 		totalMbit: prometheus.NewGauge(
 			prometheus.GaugeOpts{
 				Name: "shaper_total_mbit",
-				Help: "Agregate uplink throughput across all classes in Mbit/s.",
+				Help: "Aggregate uplink throughput across all classes in Mbit/s.",
 			},
 		),
 	}
