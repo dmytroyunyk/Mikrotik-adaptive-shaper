@@ -3,6 +3,7 @@ package routeros
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/dmytroyunyk/adaptive-shaper/models"
 )
@@ -21,12 +22,12 @@ func (c *Client) EnsureMangle(ctx context.Context, iface string) error {
 	}
 	if err := c.markConnection(ctx, iface, models.ClassRealtime,
 		"=protocol=udp",
-		"=packet-size=0-"+itoa(realtimeMaxPacketSize),
+		"=packet-size=0-"+strconv.Itoa(realtimeMaxPacketSize),
 	); err != nil {
 		return err
 	}
 	if err := c.markConnection(ctx, iface, models.ClassBulk,
-		"=packet-size="+itoa(bulkMinPacketSize)+"-65535",
+		"=packet-size="+strconv.Itoa(bulkMinPacketSize)+"-65535",
 	); err != nil {
 		return err
 	}
@@ -103,8 +104,4 @@ func (c *Client) clearMangle(ctx context.Context) error {
 		}
 	}
 	return nil
-}
-
-func itoa(n int) string {
-	return fmt.Sprintf("%d", n)
 }
