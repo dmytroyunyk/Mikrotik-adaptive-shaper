@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/netip"
+	"strconv"
+	"strings"
 )
 
 type ConnectionSummary struct {
@@ -11,6 +13,7 @@ type ConnectionSummary struct {
 	Total    int
 	TCPCount int
 	UDPCount int
+	RateBps  uint64
 }
 
 func (c *Client) SourceConnections(ctx context.Context) (map[netip.Addr]ConnectionSummary, error) {
@@ -41,6 +44,7 @@ func (c *Client) SourceConnections(ctx context.Context) (map[netip.Addr]Connecti
 		case "udp":
 			s.UDPCount++
 		}
+		s.RateBps += parseRate(sentence.Map["orig-rate"])
 		sums[addr] = s
 	}
 
@@ -55,4 +59,28 @@ func parseSrcAddr(raw string) (netip.Addr, bool) {
 		return a, true
 	}
 	return netip.Addr{}, false
+}
+
+func parseRate(raw string) uint64 {
+	raw = strings.TrimSpace(strings.ToLower(raw))
+	if raw == "" || raw == "0bps" {
+		return 0
+	}
+	raw = strings.TrimSuffix(raw, "bps")
+
+	mult := uint64(1)
+	switch {
+	case strings.HasSuffix(raw, "g"):
+		mult, raw = 1_000_000_000, strings.TrimSuffix(raw, "g")
+	case strings.HasSuffix(raw, "m"):
+		mult, raw = 1_000_000, strings.TrimSuffix(raw, "m")
+	case strings.HasSuffix(raw, "k"):
+		mult, raw = 1_000, strings.TrimSuffix(raw, "k")
+	}
+
+	val, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		return 0
+	}
+	return uint64(val * float64(mult))
 }
