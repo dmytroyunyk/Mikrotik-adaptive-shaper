@@ -15,6 +15,7 @@ type Config struct {
 	Agent      AgentConfig      `yaml:"agent"`
 	Shaper     ShaperConfig     `yaml:"shaper"`
 	Classifier ClassifierConfig `yaml:"classifier"`
+	Controller ControllerConfig `yaml:"controller"`
 }
 
 type RouterOSConfig struct {
@@ -43,6 +44,12 @@ type ClassifierConfig struct {
 	UDPRatioRealtime float64 `yaml:"udp_ratio_realtime"`
 	BulkMinConns     int     `yaml:"bulk_min_conns"`
 	BulkMinBps       uint64  `yaml:"bulk_min_bps"`
+}
+
+type ControllerConfig struct {
+	HighWatermark float64 `yaml:"realtime_high_watermark"`
+	HoldTicks     int     `yaml:"hold_ticks"`
+	StepMbit      int     `yaml:"step_mbit"`
 }
 
 func Load(path string) (*Config, error) {
@@ -82,6 +89,15 @@ func (c *Config) applyDefaults() {
 	}
 	if c.Classifier.BulkMinBps == 0 {
 		c.Classifier.BulkMinBps = 5_000_000
+	}
+	if c.Controller.HighWatermark == 0 {
+		c.Controller.HighWatermark = 0.9
+	}
+	if c.Controller.HoldTicks == 0 {
+		c.Controller.HoldTicks = 3
+	}
+	if c.Controller.StepMbit == 0 {
+		c.Controller.StepMbit = 50
 	}
 }
 
